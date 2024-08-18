@@ -4,6 +4,7 @@ import (
 	"ChiragKr04/go-backend/types"
 	"database/sql"
 	"fmt"
+	"time"
 )
 
 type UserRepository struct {
@@ -48,17 +49,56 @@ func (r *UserRepository) CreateUser(user types.User) error {
 	return nil
 }
 
-func scanRowsIntoUser(rows *sql.Rows) (*types.User, error) {
-	user := &types.User{}
-	if err := rows.Scan(
-		&user.ID,
-		&user.FirstName,
-		&user.LastName,
-		&user.Email,
-		&user.Password,
-		&user.CreatedAt,
-	); err != nil {
+func (r *UserRepository) GetUserByID(id int) (*types.User, error) {
+	rows, err := r.db.Query(("SELECT * FROM users WHERE id = ?"), id)
+	if err != nil {
 		return nil, err
 	}
+	user := &types.User{}
+	for rows.Next() {
+		user, err = scanRowsIntoUser(rows)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if user.ID == 0 {
+		return nil, fmt.Errorf("user not found")
+	}
 	return user, nil
+}
+
+func (r *UserRepository) UpdateUser(user types.User) (*types.User, error) {
+	_, err := r.db.Exec(
+		"UPDATE users SET first_name = ?, last_name = ?, email = ? WHERE id = ?",
+		user.FirstName,
+		user.LastName,
+		user.Email,
+		user.ID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return r.GetUserByID(user.ID)
+}
+
+func scanRowsIntoUser(rows *sql.Rows) (*types.User, error) {
+    user := &types.User{}
+    var createdAtStr string
+    if err := rows.Scan(
+        &user.ID,
+        &user.FirstName,
+        &user.LastName,
+        &user.Email,
+        &user.Password,
+        &createdAtStr,
+    ); err != nil {
+        return nil, err
+    }
+
+    createdAt, err := time.Parse(time.RFC3339, createdAtStr)
+	if err != nil {
+		return nil, err
+	}
+	user.CreatedAt = createdAt
+    return user, nil
 }

@@ -70,3 +70,13 @@ func (m *mockUserRepo) CreateUser(user types.User) error {
 func (m *mockUserRepo) GetUserByEmail(email string) (*types.User, error) {
 	return nil, fmt.Errorf("user not found")
 }
+
+// GetUserByID implements types.UserRepository.
+func (m *mockUserRepo) GetUserByID(id int) (*types.User, error) {
+	return nil, fmt.Errorf("user not found")
+}
+
+// UpdateUser implements types.UserRepository.
+func (m *mockUserRepo) UpdateUser(user types.User) (*types.User, error) {
+	return nil, fmt.Errorf("user not found")
+}
