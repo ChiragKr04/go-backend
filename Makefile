@@ -18,3 +18,19 @@ test:
 tidy:
 	@echo "Tidying up the modules"
 	@go mod tidy
+
+migration:
+	@echo "Running the migrations"
+	@migrate create -ext sql -dir cmd/migrate/migrations $(filter-out $@,$(MAKECMDGOALS))
+
+migrate-up:
+	@echo "Running the migrations up"
+	@go run cmd/migrate/main.go up
+
+migrate-down:
+	@echo "Running the migrations down"
+	@go run cmd/migrate/main.go down
+
+migrate-fix:
+	@echo "Fixing the migrations"
+	@go run cmd/migrate/main.go fix
