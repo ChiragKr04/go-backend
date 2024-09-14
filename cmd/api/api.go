@@ -2,6 +2,7 @@ package api
 
 import (
 	"ChiragKr04/go-backend/service/user"
+	"ChiragKr04/go-backend/service/websocket"
 	"database/sql"
 	"log"
 	"net/http"
@@ -29,6 +30,9 @@ func (s *APIServerModel) Run() error {
 	userRepo := user.NewRepository(s.db)
 	userHandler := user.NewHandler(userRepo)
 	userHandler.UserRoutes(subRouter)
+
+	websocketHandler := websocket.NewHandler(userRepo)
+	websocketHandler.WebsocketRoutes(subRouter)
 
 	log.Println("Starting server on", s.address)
 
