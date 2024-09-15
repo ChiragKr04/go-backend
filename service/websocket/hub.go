@@ -2,6 +2,7 @@ package websocket
 
 import (
 	"ChiragKr04/go-backend/types"
+	"net/http"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -50,10 +51,14 @@ const (
 
 var (
 	newline = []byte{'\n'}
-	space   = []byte{' '}
+	// space   = []byte{' '}
 )
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
+	CheckOrigin: func(r *http.Request) bool {
+		// Allow all connections by returning true
+		return true
+	},
 }

@@ -3,8 +3,10 @@ package websocket
 import (
 	"ChiragKr04/go-backend/service/user"
 	"ChiragKr04/go-backend/types"
-	"bytes"
-	"encoding/json"
+	// "bytes"
+	"fmt"
+
+	// "encoding/json"
 	"log"
 	"net/http"
 	"strconv"
@@ -69,24 +71,25 @@ func (h *Handler) ReadPump(c *LocalClient) {
 	c.Conn.SetPongHandler(func(string) error { c.Conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 	for {
 		_, msg, err := c.Conn.ReadMessage()
+		fmt.Println(string(msg))
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Printf("error: %v", err)
 			}
 			break
 		}
-		user := GetUserData(c.Client, h.UserRepo)
-		userJson, err := json.Marshal(
-			map[string]interface{}{
-				"message": string(msg),
-				"user":    user,
-			},
-		)
-		if err != nil {
-			log.Println(err)
-		}
-		message := bytes.TrimSpace(bytes.Replace(userJson, newline, space, -1))
-		c.Hub.Broadcast <- message
+		// user := GetUserData(c.Client, h.UserRepo)
+		// userJson, err := json.Marshal(
+		// 	map[string]interface{}{
+		// 		"message": string(msg),
+		// 		"user":    user,
+		// 	},
+		// )
+		// if err != nil {
+		// 	log.Println(err)
+		// }
+		// message := bytes.TrimSpace(bytes.Replace(msg, nil, nil, -1))
+		c.Hub.Broadcast <- msg
 	}
 }
 
