@@ -1,6 +1,7 @@
 package api
 
 import (
+	"ChiragKr04/go-backend/service/rooms"
 	"ChiragKr04/go-backend/service/user"
 	"ChiragKr04/go-backend/service/websocket"
 	"database/sql"
@@ -33,6 +34,10 @@ func (s *APIServerModel) Run() error {
 
 	websocketHandler := websocket.NewHandler(userRepo)
 	websocketHandler.WebsocketRoutes(subRouter)
+
+	roomsRepo := rooms.NewRepository(s.db)
+	roomsHandler := rooms.NewHandler(roomsRepo)
+	roomsHandler.RoomRoutes(subRouter)
 
 	log.Println("Starting server on", s.address)
 
