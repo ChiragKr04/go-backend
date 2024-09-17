@@ -36,7 +36,7 @@ func (s *APIServerModel) Run() error {
 	websocketHandler.WebsocketRoutes(subRouter)
 
 	roomsRepo := rooms.NewRepository(s.db)
-	roomsHandler := rooms.NewHandler(roomsRepo)
+	roomsHandler := rooms.NewHandler(roomsRepo, userRepo)
 	roomsHandler.RoomRoutes(subRouter)
 
 	log.Println("Starting server on", s.address)

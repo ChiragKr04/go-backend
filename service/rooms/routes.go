@@ -9,15 +9,18 @@ import (
 )
 
 type Handler struct {
-	repo types.RoomRepository
+	repo     types.RoomRepository
+	userRepo types.UserRepository
 }
 
-func NewHandler(repo types.RoomRepository) *Handler {
+func NewHandler(repo types.RoomRepository, userRepo types.UserRepository) *Handler {
 	return &Handler{
-		repo: repo,
+		repo:     repo,
+		userRepo: userRepo,
 	}
 }
 
 func (h *Handler) RoomRoutes(router *mux.Router) {
 	router.HandleFunc("/create-room", service.WrapWithAuth(h.handleCreateRoom)).Methods(http.MethodPost)
+	router.HandleFunc("/get-room-by-roomid/{roomId}", service.WrapWithAuth(h.HandleGetRoomById)).Methods(http.MethodGet)
 }
