@@ -3,6 +3,7 @@ package rooms
 import (
 	"ChiragKr04/go-backend/types"
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -50,6 +51,9 @@ func (r *RoomsRepository) GetRoomByRoomId(roomId string) (*types.Room, error) {
 	if err != nil {
 		return nil, err
 	}
+	if room.ID == 0 {
+		return nil, fmt.Errorf("room not found")
+	}
 	return room, nil
 }
 
@@ -60,7 +64,7 @@ func scanRowsIntoRoom(rows *sql.Rows) (*types.Room, error) {
 		if err != nil {
 			return nil, err
 		}
-	}
+	} 
 	return room, nil
 }
 
