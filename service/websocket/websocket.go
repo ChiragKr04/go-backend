@@ -1,15 +1,16 @@
 package websocket
 
 import (
+	"ChiragKr04/go-backend/service/rooms"
 	"ChiragKr04/go-backend/service/user"
 	"ChiragKr04/go-backend/types"
+
 	// "bytes"
 	"fmt"
 
 	// "encoding/json"
 	"log"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -31,32 +32,36 @@ func NewWebhookHandler(userRepo user.UserRepository) *WebhookHandler {
 }
 
 // serveWs handles websocket requests from the peer.
-func (h *Handler) serveWs(hub *HubFile, w http.ResponseWriter, r *http.Request) {
+func (h *Handler) serveWs(w http.ResponseWriter, r *http.Request) {
+	room := GetValidRoom(r, w, h.RoomRepo)
+	if room == nil {
+		http.Error(w, "Room ID not found", http.StatusBadRequest)
+		return
+	}
+
+	// Get the hub for the room
+	hub := h.HubManager.GetHub(room.RoomId)
+
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println("Upgrade error:", err)
+		return
+	}
 
 	client := &LocalClient{
 		Client: &types.Client{
 			Hub:            hub.HubType,
 			Send:           make(chan []byte, 256),
-			ResponseWriter: w,
 			Request:        r,
+			RoomId:         room.RoomId,
 		},
 	}
-
-	user := GetUserData(client.Client, h.UserRepo)
-	if user == nil {
-		http.Error(w, "User ID not found", http.StatusBadRequest)
-		return
-	}
-
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Println(err)
-		return
-	}
 	client.Conn = conn
-	client.Hub.Register <- client.Client
-	// Allow collection of memory referenced by the caller by doing all work in
-	// new goroutines.
+
+	// Register the client with the hub
+	hub.HubType.Register <- client.Client
+
+	// Start the pumps
 	go h.WritePump(client)
 	go h.ReadPump(client)
 }
@@ -78,17 +83,6 @@ func (h *Handler) ReadPump(c *LocalClient) {
 			}
 			break
 		}
-		// user := GetUserData(c.Client, h.UserRepo)
-		// userJson, err := json.Marshal(
-		// 	map[string]interface{}{
-		// 		"message": string(msg),
-		// 		"user":    user,
-		// 	},
-		// )
-		// if err != nil {
-		// 	log.Println(err)
-		// }
-		// message := bytes.TrimSpace(bytes.Replace(msg, nil, nil, -1))
 		c.Hub.Broadcast <- msg
 	}
 }
@@ -104,7 +98,6 @@ func (h *Handler) WritePump(c *LocalClient) {
 		case message, ok := <-c.Send:
 			c.Conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
-				// The hub closed the channel.
 				c.Conn.WriteMessage(websocket.CloseMessage, []byte{})
 				return
 			}
@@ -133,28 +126,17 @@ func (h *Handler) WritePump(c *LocalClient) {
 	}
 }
 
-func GetUserData(c *types.Client, userRepo *user.UserRepository) *types.User {
-	vars := mux.Vars(c.Request)
-	userIDStr := vars["userId"]
+func GetValidRoom(r *http.Request, w http.ResponseWriter, roomRepo *rooms.RoomsRepository) *types.Room {
+	vars := mux.Vars(r)
+	roomId := vars["roomId"]
 
-	log.Printf("User ID: %s", userIDStr)
+	log.Printf("Room ID: %s", roomId)
 
-	userID, err := strconv.Atoi(userIDStr)
+	room, err := roomRepo.GetRoomByRoomId(roomId)
 	if err != nil {
-		http.Error(c.ResponseWriter, "Invalid user ID", http.StatusBadRequest)
+		http.Error(w, "User not found", http.StatusNotFound)
 		return nil
 	}
 
-	if userID == 0 {
-		log.Println("User ID not found")
-		http.Error(c.ResponseWriter, "User ID not found", http.StatusBadRequest)
-	}
-
-	user, err := userRepo.GetUserByID(userID)
-	if err != nil {
-		http.Error(c.ResponseWriter, "User not found", http.StatusNotFound)
-		return nil
-	}
-
-	return user
+	return room
 }

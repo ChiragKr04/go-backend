@@ -28,17 +28,24 @@ func (s *APIServerModel) Run() error {
 	router := mux.NewRouter()
 	subRouter := router.PathPrefix("/api/v1").Subrouter()
 
-	userRepo := user.NewRepository(s.db)
-	userHandler := user.NewHandler(userRepo)
-	userHandler.UserRoutes(subRouter)
+	/// Repositories
 
-	websocketHandler := websocket.NewHandler(userRepo)
+	userRepo := user.NewRepository(s.db)
+	roomsRepo := rooms.NewRepository(s.db)
+	
+	/// Handlers
+
+	userHandler := user.NewHandler(userRepo)
+	websocketHandler := websocket.NewHandler(userRepo, roomsRepo)
+	roomsHandler := rooms.NewHandler(roomsRepo, userRepo)
+	
+	/// Routes
+	
+	userHandler.UserRoutes(subRouter)
+	roomsHandler.RoomRoutes(subRouter)
 	websocketHandler.WebsocketRoutes(subRouter)
 
-	roomsRepo := rooms.NewRepository(s.db)
-	roomsHandler := rooms.NewHandler(roomsRepo, userRepo)
-	roomsHandler.RoomRoutes(subRouter)
-
+	
 	log.Println("Starting server on", s.address)
 
 	return http.ListenAndServe(s.address, router)

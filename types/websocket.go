@@ -15,9 +15,9 @@ type Client struct {
 	// Buffered channel of outbound messages.
 	Send chan []byte
 
-	ResponseWriter http.ResponseWriter
-
 	Request *http.Request
+
+	RoomId string
 }
 
 type Hub struct {

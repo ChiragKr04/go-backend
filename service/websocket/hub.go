@@ -2,6 +2,7 @@ package websocket
 
 import (
 	"ChiragKr04/go-backend/types"
+	"log"
 	"net/http"
 	"time"
 
@@ -17,10 +18,12 @@ func (h *HubFile) Run() {
 		select {
 		case client := <-h.HubType.Register:
 			h.HubType.Clients[client] = true
+			log.Printf("Client registered. Total clients: %d", len(h.HubType.Clients))
 		case client := <-h.HubType.Unregister:
 			if _, ok := h.HubType.Clients[client]; ok {
 				delete(h.HubType.Clients, client)
 				close(client.Send)
+				log.Printf("Client unregistered. Total clients: %d", len(h.HubType.Clients))
 			}
 		case message := <-h.HubType.Broadcast:
 			for client := range h.HubType.Clients {
