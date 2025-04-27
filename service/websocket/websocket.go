@@ -6,7 +6,7 @@ import (
 	"ChiragKr04/go-backend/types"
 
 	// "bytes"
-	"fmt"
+	// "fmt"
 
 	// "encoding/json"
 	"log"
@@ -71,12 +71,12 @@ func (h *Handler) ReadPump(c *LocalClient) {
 		c.Hub.Unregister <- c.Client
 		c.Conn.Close()
 	}()
-	c.Conn.SetReadLimit(maxMessageSize)
-	c.Conn.SetReadDeadline(time.Now().Add(pongWait))
-	c.Conn.SetPongHandler(func(string) error { c.Conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
+	// c.Conn.SetReadLimit(maxMessageSize)
+	// c.Conn.SetReadDeadline(time.Now().Add(pongWait))
+	// c.Conn.SetPongHandler(func(string) error { c.Conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 	for {
 		_, msg, err := c.Conn.ReadMessage()
-		fmt.Println(string(msg))
+		// fmt.Println(string(msg))
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Printf("error: %v", err)

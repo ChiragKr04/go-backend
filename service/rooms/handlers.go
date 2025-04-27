@@ -5,8 +5,10 @@ import (
 	"ChiragKr04/go-backend/types"
 	"ChiragKr04/go-backend/utils"
 	"errors"
+	"fmt"
 	"net/http"
 
+	"github.com/go-playground/validator"
 	"github.com/gorilla/mux"
 )
 
@@ -15,7 +17,17 @@ func (h *Handler) handleCreateRoom(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	id, err := h.repo.CreateRoom(user)
+	var payload types.RoomCreateRequest
+	if err := utils.ParseJSON(r, &payload); err != nil {
+		errors := err.(validator.ValidationErrors)
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("validation error: %s", errors))
+		return
+	}
+	if err := utils.Validate.Struct(payload); err != nil {
+		utils.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
+	id, err := h.repo.CreateRoom(user, payload.IsPrivate)
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return

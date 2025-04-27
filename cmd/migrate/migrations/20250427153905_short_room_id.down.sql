@@ -1,0 +1,1 @@
+ALTER TABLE rooms DROP COLUMN short_room_id;

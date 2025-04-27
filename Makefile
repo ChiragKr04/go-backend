@@ -34,3 +34,11 @@ migrate-down:
 migrate-fix:
 	@echo "Fixing the migrations"
 	@go run cmd/migrate/main.go fix
+
+migrate-force:
+	@echo "Forcing migration version"
+	@go run cmd/migrate/main.go force $(VERSION)
+
+migrate-status:
+	@echo "Checking migration status"
+	@go run cmd/migrate/main.go status

@@ -1,6 +1,7 @@
 package websocket
 
 import (
+	"ChiragKr04/go-backend/service"
 	"ChiragKr04/go-backend/service/rooms"
 	"ChiragKr04/go-backend/service/user"
 	"net/http"
@@ -10,8 +11,8 @@ import (
 
 type Handler struct {
 	HubManager *HubManager
-	UserRepo *user.UserRepository
-	RoomRepo *rooms.RoomsRepository
+	UserRepo   *user.UserRepository
+	RoomRepo   *rooms.RoomsRepository
 }
 
 func NewHandler(
@@ -25,7 +26,5 @@ func NewHandler(
 }
 
 func (h *Handler) WebsocketRoutes(router *mux.Router) {
-	router.HandleFunc("/ws/{roomId}", func(w http.ResponseWriter, r *http.Request) {
-		h.serveWs(w, r)
-	})
+	router.HandleFunc("/ws/{roomId}", service.WrapWithAuth(h.serveWs)).Methods(http.MethodGet)
 }
