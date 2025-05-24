@@ -26,26 +26,51 @@ func APIServer(address string, db *sql.DB) *APIServerModel {
 func (s *APIServerModel) Run() error {
 	// Run the server
 	router := mux.NewRouter()
+	// allow all CORS requests
+	// Enhanced CORS middleware
+	router.Use(func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Set CORS headers for all requests
+			origin := r.Header.Get("Origin")
+			if origin != "" {
+				w.Header().Set("Access-Control-Allow-Origin", origin)
+			} else {
+				w.Header().Set("Access-Control-Allow-Origin", "*")
+			}
+
+			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+			w.Header().Set("Access-Control-Allow-Credentials", "true")
+			w.Header().Set("Access-Control-Max-Age", "86400") // 24 hours
+
+			// Handle preflight OPTIONS request
+			if r.Method == "OPTIONS" {
+				w.WriteHeader(http.StatusOK)
+				return
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	})
 	subRouter := router.PathPrefix("/api/v1").Subrouter()
 
 	/// Repositories
 
 	userRepo := user.NewRepository(s.db)
 	roomsRepo := rooms.NewRepository(s.db)
-	
+
 	/// Handlers
 
 	userHandler := user.NewHandler(userRepo)
 	websocketHandler := websocket.NewHandler(userRepo, roomsRepo)
 	roomsHandler := rooms.NewHandler(roomsRepo, userRepo)
-	
+
 	/// Routes
-	
+
 	userHandler.UserRoutes(subRouter)
 	roomsHandler.RoomRoutes(subRouter)
 	websocketHandler.WebsocketRoutes(subRouter)
 
-	
 	log.Println("Starting server on", s.address)
 
 	return http.ListenAndServe(s.address, router)

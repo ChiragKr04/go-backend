@@ -18,6 +18,12 @@ const UserIDKey contextKey = "userId"
 func AuthMiddleware() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Allow OPTIONS requests (CORS preflight) to pass through without authentication
+			if r.Method == "OPTIONS" {
+				next.ServeHTTP(w, r)
+				return
+			}
+
 			authHeader := r.Header.Get("Authorization")
 			if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
 				utils.WriteError(w, http.StatusUnauthorized, errors.New("missing or invalid authorization header"))

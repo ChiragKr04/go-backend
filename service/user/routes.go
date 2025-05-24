@@ -19,12 +19,12 @@ func NewHandler(repo types.UserRepository) *Handler {
 }
 
 func (h *Handler) UserRoutes(router *mux.Router) {
-	router.HandleFunc("/login", h.handleLogin).Methods(http.MethodPost)
-	router.HandleFunc("/register", h.handleRegister).Methods(http.MethodPost)
+	router.HandleFunc("/login", h.handleLogin).Methods(http.MethodPost, http.MethodOptions)
+	router.HandleFunc("/register", h.handleRegister).Methods(http.MethodPost, http.MethodOptions)
 	router.HandleFunc(
 		"/get-profile/{userId}",
-		service.WrapWithAuth(h.handleGetProfile)).Methods(http.MethodGet)
+		service.WrapWithAuth(h.handleGetProfile)).Methods(http.MethodGet, http.MethodOptions)
 	router.HandleFunc(
 		"/update-profile/{userId}",
-		service.WrapWithAuth(h.handleUpdateProfile)).Methods(http.MethodPut)
+		service.WrapWithAuth(h.handleUpdateProfile)).Methods(http.MethodPut, http.MethodOptions)
 }

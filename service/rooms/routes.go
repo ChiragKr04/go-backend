@@ -21,6 +21,6 @@ func NewHandler(repo types.RoomRepository, userRepo types.UserRepository) *Handl
 }
 
 func (h *Handler) RoomRoutes(router *mux.Router) {
-	router.HandleFunc("/create-room", service.WrapWithAuth(h.handleCreateRoom)).Methods(http.MethodPost)
-	router.HandleFunc("/get-room-by-roomid/{roomId}", service.WrapWithAuth(h.HandleGetRoomById)).Methods(http.MethodGet)
+	router.HandleFunc("/create-room", service.WrapWithAuth(h.handleCreateRoom)).Methods(http.MethodPost, http.MethodOptions)
+	router.HandleFunc("/get-room-by-roomid/{roomId}", service.WrapWithAuth(h.HandleGetRoomById)).Methods(http.MethodGet, http.MethodOptions)
 }

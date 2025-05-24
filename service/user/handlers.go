@@ -77,6 +77,7 @@ func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
 		LastName:  payload.LastName,
 		Email:     payload.Email,
 		Password:  hashPassword,
+		Username:  payload.Username,
 	})
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)

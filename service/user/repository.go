@@ -37,11 +37,12 @@ func (r *UserRepository) GetUserByEmail(email string) (*types.User, error) {
 
 func (r *UserRepository) CreateUser(user types.User) error {
 	_, err := r.db.Exec(
-		"INSERT INTO users (first_name, last_name, email, password) VALUES (?, ?, ?, ?)",
+		"INSERT INTO users (first_name, last_name, email, password, username) VALUES (?, ?, ?, ?, ?)",
 		user.FirstName,
 		user.LastName,
 		user.Email,
 		user.Password,
+		user.Username,
 	)
 	if err != nil {
 		return err
@@ -91,6 +92,7 @@ func scanRowsIntoUser(rows *sql.Rows) (*types.User, error) {
         &user.Email,
         &user.Password,
         &createdAtStr,
+		&user.Username,
     ); err != nil {
         return nil, err
     }

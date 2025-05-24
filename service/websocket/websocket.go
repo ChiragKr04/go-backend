@@ -4,6 +4,7 @@ import (
 	"ChiragKr04/go-backend/service/rooms"
 	"ChiragKr04/go-backend/service/user"
 	"ChiragKr04/go-backend/types"
+	"ChiragKr04/go-backend/utils"
 
 	// "bytes"
 	// "fmt"
@@ -33,6 +34,11 @@ func NewWebhookHandler(userRepo user.UserRepository) *WebhookHandler {
 
 // serveWs handles websocket requests from the peer.
 func (h *Handler) serveWs(w http.ResponseWriter, r *http.Request) {
+	user, err := utils.GetUserFromContext(w, r, h.UserRepo)
+	if err != nil {
+		return
+	}
+	print(user)
 	room := GetValidRoom(r, w, h.RoomRepo)
 	if room == nil {
 		http.Error(w, "Room ID not found", http.StatusBadRequest)
@@ -47,13 +53,13 @@ func (h *Handler) serveWs(w http.ResponseWriter, r *http.Request) {
 		log.Println("Upgrade error:", err)
 		return
 	}
-
+// 
 	client := &LocalClient{
 		Client: &types.Client{
-			Hub:            hub.HubType,
-			Send:           make(chan []byte, 256),
-			Request:        r,
-			RoomId:         room.RoomId,
+			Hub:     hub.HubType,
+			Send:    make(chan []byte, 256),
+			Request: r,
+			RoomId:  room.RoomId,
 		},
 	}
 	client.Conn = conn

@@ -30,10 +30,32 @@ func WriteError(w http.ResponseWriter, status int, err error) {
 
 func ReturnUserWithoutPassword(user types.User) map[string]interface{} {
 	return map[string]interface{}{
-		"id":        user.ID,
+		"id":         user.ID,
 		"first_name": user.FirstName,
 		"last_name":  user.LastName,
-		"email":     user.Email,
-		"createdAt": user.CreatedAt,
+		"email":      user.Email,
+		"createdAt":  user.CreatedAt,
+		"username":   user.Username,
 	}
+}
+
+func GetUserFromContext(w http.ResponseWriter, r *http.Request, userRepo types.UserRepository) (*types.User, error) {
+	userIDValue := r.Context().Value("userId")
+	if userIDValue == nil {
+		WriteError(w, http.StatusUnauthorized, errors.New("unauthorized"))
+		return nil, nil
+	}
+
+	// Convert userIDValue to int
+	userID, ok := userIDValue.(int)
+	if !ok {
+		WriteError(w, http.StatusInternalServerError, errors.New("error converting userID to int"))
+		return nil, nil
+	}
+	user, err := userRepo.GetUserByID(userID)
+	if err != nil {
+		WriteError(w, http.StatusNotFound, errors.New("user not found"))
+		return nil, nil
+	}
+	return user, nil
 }
