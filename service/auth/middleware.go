@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"ChiragKr04/go-backend/types"
 	"ChiragKr04/go-backend/utils"
 	"context"
 	"errors"
@@ -10,10 +11,6 @@ import (
 
 	"github.com/golang-jwt/jwt"
 )
-
-type contextKey string
-
-const UserIDKey contextKey = "userId"
 
 func AuthMiddleware() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
@@ -41,8 +38,7 @@ func AuthMiddleware() func(http.Handler) http.Handler {
 			}
 
 			// Add the user ID to the context
-
-			ctx := context.WithValue(r.Context(), UserIDKey, userID)
+			ctx := context.WithValue(r.Context(), types.UserIDKey, userID)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
@@ -64,8 +60,8 @@ func validateJWT(tokenString string, secret []byte) (int, error) {
 
 	// Extract the claims (payload)
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		// Extract the user ID from the claims
-		if userIDStr, ok := claims[string(UserIDKey)].((string)); ok {
+		// Extract the user ID from the claims - use "userId" key directly
+		if userIDStr, ok := claims["userId"].(string); ok {
 			userID, err := strconv.Atoi(userIDStr)
 			if err != nil {
 				return 0, errors.New("invalid user ID format")

@@ -2,6 +2,10 @@ package types
 
 import "time"
 
+type ContextKey string
+
+const UserIDKey ContextKey = "userId"
+
 type UserRepository interface {
 	GetUserByEmail(email string) (*User, error)
 	CreateUser(user User) error

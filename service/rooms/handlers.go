@@ -1,7 +1,6 @@
 package rooms
 
 import (
-	"ChiragKr04/go-backend/service/auth"
 	"ChiragKr04/go-backend/types"
 	"ChiragKr04/go-backend/utils"
 	"errors"
@@ -57,7 +56,7 @@ func (h *Handler) HandleGetRoomById(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) getUserFromContext(w http.ResponseWriter, r *http.Request) (*types.User, error) {
-	userIDValue := r.Context().Value(auth.UserIDKey)
+	userIDValue := r.Context().Value(types.UserIDKey)
 	if userIDValue == nil {
 		utils.WriteError(w, http.StatusUnauthorized, errors.New("unauthorized"))
 		return nil, nil

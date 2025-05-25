@@ -40,7 +40,7 @@ func ReturnUserWithoutPassword(user types.User) types.User {
 }
 
 func GetUserFromContext(w http.ResponseWriter, r *http.Request, userRepo types.UserRepository) (*types.User, error) {
-	userIDValue := r.Context().Value("userId")
+	userIDValue := r.Context().Value(types.UserIDKey)
 	if userIDValue == nil {
 		WriteError(w, http.StatusUnauthorized, errors.New("unauthorized"))
 		return nil, nil

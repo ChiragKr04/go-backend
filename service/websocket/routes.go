@@ -26,5 +26,5 @@ func NewHandler(
 }
 
 func (h *Handler) WebsocketRoutes(router *mux.Router) {
-	router.HandleFunc("/ws/{roomId}", service.WrapWithAuth(h.serveWs)).Methods(http.MethodGet)
+	router.HandleFunc("/ws/{roomId}", service.WrapWithAuth(h.serveWs)).Methods(http.MethodGet, http.MethodOptions)
 }

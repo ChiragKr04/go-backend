@@ -34,7 +34,7 @@ func NewWebhookHandler(userRepo user.UserRepository) *WebhookHandler {
 
 // serveWs handles websocket requests from the peer.
 func (h *Handler) serveWs(w http.ResponseWriter, r *http.Request) {
-	user, err := utils.GetUserFromContext(w, r, h.UserRepo)
+	user, err := utils.GetUserFromContext(w, r, types.UserRepository(h.UserRepo))
 	if err != nil {
 		return
 	}
@@ -53,7 +53,7 @@ func (h *Handler) serveWs(w http.ResponseWriter, r *http.Request) {
 		log.Println("Upgrade error:", err)
 		return
 	}
-// 
+	//
 	client := &LocalClient{
 		Client: &types.Client{
 			Hub:     hub.HubType,
