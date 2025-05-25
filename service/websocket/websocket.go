@@ -34,11 +34,23 @@ func NewWebhookHandler(userRepo user.UserRepository) *WebhookHandler {
 
 // serveWs handles websocket requests from the peer.
 func (h *Handler) serveWs(w http.ResponseWriter, r *http.Request) {
-	user, err := utils.GetUserFromContext(w, r, types.UserRepository(h.UserRepo))
-	if err != nil {
+	// take token in query
+	token := r.URL.Query().Get("token")
+	if token == "" {
+		http.Error(w, "Token is required", http.StatusBadRequest)
 		return
 	}
-	print(user)
+	userID, err := utils.GetUserIDFromToken(w, r)
+	if err != nil || userID == 0 {
+		http.Error(w, "Invalid token", http.StatusUnauthorized)
+		return
+	}
+	user, err := h.UserRepo.GetUserByID(userID)
+	if err != nil {
+		http.Error(w, "User not found", http.StatusNotFound)
+		return
+	}
+	print(user.Email)
 	room := GetValidRoom(r, w, h.RoomRepo)
 	if room == nil {
 		http.Error(w, "Room ID not found", http.StatusBadRequest)

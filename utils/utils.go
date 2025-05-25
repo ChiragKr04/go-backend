@@ -5,8 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/go-playground/validator"
+	"github.com/golang-jwt/jwt"
 )
 
 var Validate = validator.New()
@@ -58,4 +61,43 @@ func GetUserFromContext(w http.ResponseWriter, r *http.Request, userRepo types.U
 		return nil, nil
 	}
 	return user, nil
+}
+
+func GetUserIDFromToken(w http.ResponseWriter, r *http.Request) (int, error) {
+	tokenValue := r.URL.Query().Get("token")
+	if tokenValue == "" {
+		WriteError(w, http.StatusBadRequest, errors.New("token is required"))
+		return 0, nil
+	}
+	// get user id from token
+	tokenValue = strings.TrimPrefix(tokenValue, "Bearer ")
+
+	// Parse and validate the token
+	token, err := jwt.Parse(tokenValue, func(token *jwt.Token) (interface{}, error) {
+		// Check if the signing method is correct
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New("unexpected signing method")
+		}
+		return []byte("secret"), nil
+	})
+
+	if err != nil {
+		return 0, err
+	}
+
+	// Extract the claims (payload)
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		// Extract the user ID from the claims - use "userId" key directly
+		if userIDStr, ok := claims["userId"].(string); ok {
+			userID, err := strconv.Atoi(userIDStr)
+			if err != nil {
+				return 0, errors.New("invalid user ID format")
+			}
+			return userID, nil
+		}
+		return 0, errors.New("invalid token claims")
+	}
+
+	return 0, errors.New("invalid token")
+
 }
