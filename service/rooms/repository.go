@@ -48,25 +48,26 @@ func (r *RoomsRepository) CreateRoom(user *types.User, payload types.RoomCreateR
 	}
 
 	// Create a single invitation group for the room
-	var invitationGroupID int64
-	groupResult, err := tx.Exec("INSERT INTO invitation_groups (room_id, created_at) VALUES (?, ?)", uuid, createdAt)
-	if err != nil {
-		_ = tx.Rollback()
-		return -1, err
-	}
-
-	invitationGroupID, err = groupResult.LastInsertId()
-	if err != nil {
-		_ = tx.Rollback()
-		return -1, err
-	}
-
-	// Add all users to the invitation group
-	for _, userID := range payload.Invitations {
-		_, err = tx.Exec("INSERT INTO invitation_users (invitation_group_id, user_id) VALUES (?, ?)", invitationGroupID, userID)
+	var invitationGroupID *int64 = nil
+	if payload.Invitations != nil && len(payload.Invitations) > 0 {
+		groupResult, err := tx.Exec("INSERT INTO invitation_groups (room_id, created_at) VALUES (?, ?)", uuid, createdAt)
 		if err != nil {
 			_ = tx.Rollback()
 			return -1, err
+		}
+		invitationGroupIDValue, err := groupResult.LastInsertId()
+		invitationGroupID = &invitationGroupIDValue
+		if err != nil {
+			_ = tx.Rollback()
+			return -1, err
+		}
+		// Add all users to the invitation group
+		for _, userID := range payload.Invitations {
+			_, err = tx.Exec("INSERT INTO invitation_users (invitation_group_id, user_id) VALUES (?, ?)", invitationGroupID, userID)
+			if err != nil {
+				_ = tx.Rollback()
+				return -1, err
+			}
 		}
 	}
 

@@ -7,6 +7,7 @@ type UserRepository interface {
 	CreateUser(user User) error
 	GetUserByID(id int) (*User, error)
 	UpdateUser(user User) (*User, error)
+	SearchUser(query string) ([]User, error)
 }
 
 type UserRegisterRequest struct {

@@ -19,6 +19,6 @@ type Room struct {
 }
 
 type RoomCreateRequest struct {
-	IsPrivate   bool  `json:"is_private" validate:"required"`
-	Invitations []int `json:"invitations" validate:"required,min=1,dive,number"`
+	IsPrivate   bool  `json:"is_private"`
+	Invitations []int `json:"invitations" validate:"omitempty,min=1"`
 }

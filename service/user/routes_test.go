@@ -80,3 +80,7 @@ func (m *mockUserRepo) GetUserByID(id int) (*types.User, error) {
 func (m *mockUserRepo) UpdateUser(user types.User) (*types.User, error) {
 	return nil, fmt.Errorf("user not found")
 }
+
+func (m *mockUserRepo) SearchUser(query string) ([]types.User, error) {
+	return nil, fmt.Errorf("user not found")
+}

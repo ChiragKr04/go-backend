@@ -27,4 +27,7 @@ func (h *Handler) UserRoutes(router *mux.Router) {
 	router.HandleFunc(
 		"/update-profile/{userId}",
 		service.WrapWithAuth(h.handleUpdateProfile)).Methods(http.MethodPut, http.MethodOptions)
+	router.HandleFunc(
+		"/search-user",
+		service.WrapWithAuth(h.handleSearchUser)).Methods(http.MethodGet, http.MethodOptions)
 }

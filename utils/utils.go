@@ -28,14 +28,14 @@ func WriteError(w http.ResponseWriter, status int, err error) {
 	WriteJSON(w, status, map[string]string{"error": err.Error()})
 }
 
-func ReturnUserWithoutPassword(user types.User) map[string]interface{} {
-	return map[string]interface{}{
-		"id":         user.ID,
-		"first_name": user.FirstName,
-		"last_name":  user.LastName,
-		"email":      user.Email,
-		"createdAt":  user.CreatedAt,
-		"username":   user.Username,
+func ReturnUserWithoutPassword(user types.User) types.User {
+	return types.User{
+		ID:        user.ID,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Email:     user.Email,
+		CreatedAt: user.CreatedAt,
+		Username:  user.Username,
 	}
 }
 

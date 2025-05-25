@@ -143,6 +143,20 @@ func (h *Handler) handleUpdateProfile(w http.ResponseWriter, r *http.Request) {
 	utils.WriteJSON(w, http.StatusOK, returnUserWithToken(*user))
 }
 
+func (h *Handler) handleSearchUser(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query().Get("search")
+	if query == "" {
+		utils.WriteError(w, http.StatusBadRequest, errors.New("search query is required"))
+		return
+	}
+	users, err := h.repo.SearchUser(query)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+	utils.WriteJSON(w, http.StatusOK, users)
+}
+
 func returnUserWithToken(user types.User) map[string]interface{} {
 	secret := []byte("secret")
 	token, err := auth.CreateJWTToken(secret, user.ID)
