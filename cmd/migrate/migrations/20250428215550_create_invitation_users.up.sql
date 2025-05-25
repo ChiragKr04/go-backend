@@ -1,5 +1,5 @@
 -- Create a new table for invitation-user associations
-CREATE TABLE `go_backend`.`invitation_users` (
+CREATE TABLE IF NOT EXISTS `go_backend`.`invitation_users` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `invitation_group_id` INT NOT NULL,
   `user_id` INT NOT NULL,

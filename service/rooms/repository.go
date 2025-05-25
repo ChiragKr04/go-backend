@@ -71,7 +71,7 @@ func (r *RoomsRepository) CreateRoom(user *types.User, payload types.RoomCreateR
 		}
 	}
 
-	result, err := tx.Exec("INSERT INTO rooms (room_id, short_room_id, created_at, created_by, is_private, invitations) VALUES (?, ?, ?, ?, ?, ?)", uuid, shortRoomID, createdAt, createdBy, payload.IsPrivate, invitationGroupID)
+	result, err := tx.Exec("INSERT INTO rooms (room_id, short_room_id, created_at, created_by, is_private, invitations, room_name, room_description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", uuid, shortRoomID, createdAt, createdBy, payload.IsPrivate, invitationGroupID, payload.RoomName, payload.RoomDescription)
 	if err != nil {
 		_ = tx.Rollback()
 		return -1, err
@@ -89,7 +89,7 @@ func (r *RoomsRepository) CreateRoom(user *types.User, payload types.RoomCreateR
 }
 
 func (r *RoomsRepository) GetRoomById(id int64) (*types.Room, error) {
-	res, err := r.db.Query("SELECT * FROM rooms WHERE id = ?", id)
+	res, err := r.db.Query("SELECT id, room_id, created_by, created_at, is_private, short_room_id, invitations, room_name, room_description FROM rooms WHERE id = ?", id)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +109,7 @@ func (r *RoomsRepository) GetRoomById(id int64) (*types.Room, error) {
 }
 
 func (r *RoomsRepository) GetRoomByRoomId(roomId string) (*types.Room, error) {
-	res, err := r.db.Query("SELECT * FROM rooms WHERE room_id = ?", roomId)
+	res, err := r.db.Query("SELECT id, room_id, created_by, created_at, is_private, short_room_id, invitations, room_name, room_description FROM rooms WHERE room_id = ? or short_room_id = ?", roomId, roomId)
 	if err != nil {
 		return nil, err
 	}
@@ -135,11 +135,11 @@ func (r *RoomsRepository) GetRoomByRoomId(roomId string) (*types.Room, error) {
 func scanRowsIntoRoom(rows *sql.Rows) (*types.Room, error) {
 	room := &types.Room{}
 	for rows.Next() {
-		// Need to scan all 7 columns from the rooms table
-		// The 7th column is 'invitations' which is stored as INT in the database
+		// Need to scan all 9 columns from the rooms table
+		// The 6th column is 'invitations' which is stored as INT in the database
 		// but we'll handle it separately with fetchInvitationUsers
 		var dbInvitation sql.NullInt64 // Use NullInt64 to handle NULL values
-		err := rows.Scan(&room.ID, &room.RoomId, &room.CreatedBy, &room.CreatedAt, &room.IsPrivate, &room.ShortRoomId, &dbInvitation)
+		err := rows.Scan(&room.ID, &room.RoomId, &room.CreatedBy, &room.CreatedAt, &room.IsPrivate, &room.ShortRoomId, &dbInvitation, &room.RoomName, &room.RoomDescription)
 		if err != nil {
 			return nil, err
 		}

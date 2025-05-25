@@ -1,5 +1,5 @@
 -- Create a new table for invitation groups
-CREATE TABLE `go_backend`.`invitation_groups` (
+CREATE TABLE IF NOT EXISTS `go_backend`.`invitation_groups` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `room_id` VARCHAR(255) NOT NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

@@ -37,7 +37,7 @@ migrate-fix:
 
 migrate-force:
 	@echo "Forcing migration version"
-	@go run cmd/migrate/main.go force $(VERSION)
+	@go run cmd/migrate/main.go force $(filter-out $@,$(MAKECMDGOALS))
 
 migrate-status:
 	@echo "Checking migration status"
