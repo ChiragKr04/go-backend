@@ -1,0 +1,12 @@
+CREATE TABLE IF NOT EXISTS `chats` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `userId` INT NOT NULL,
+  `chat` VARCHAR(500) NOT NULL,
+  `chatType` VARCHAR(45) NOT NULL DEFAULT 'TEXT',
+  PRIMARY KEY (`id`),
+  INDEX `userId_idx` (`userId` ASC) VISIBLE,
+  CONSTRAINT `userId`
+    FOREIGN KEY (`userId`)
+    REFERENCES `users` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);

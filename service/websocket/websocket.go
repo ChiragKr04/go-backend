@@ -6,10 +6,7 @@ import (
 	"ChiragKr04/go-backend/types"
 	"ChiragKr04/go-backend/utils"
 
-	// "bytes"
-	// "fmt"
-
-	// "encoding/json"
+	"encoding/json"
 	"log"
 	"net/http"
 	"time"
@@ -20,6 +17,7 @@ import (
 
 type LocalClient struct {
 	*types.Client
+	UserID int
 }
 
 type WebhookHandler struct {
@@ -73,6 +71,7 @@ func (h *Handler) serveWs(w http.ResponseWriter, r *http.Request) {
 			Request: r,
 			RoomId:  room.RoomId,
 		},
+		UserID: userID,
 	}
 	client.Conn = conn
 
@@ -94,13 +93,38 @@ func (h *Handler) ReadPump(c *LocalClient) {
 	// c.Conn.SetPongHandler(func(string) error { c.Conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 	for {
 		_, msg, err := c.Conn.ReadMessage()
-		// fmt.Println(string(msg))
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Printf("error: %v", err)
 			}
 			break
 		}
+
+		// Parse the incoming message
+		var chatMessage types.ChatMessage
+		if err := json.Unmarshal(msg, &chatMessage); err != nil {
+			log.Printf("Error parsing message: %v", err)
+			continue
+		}
+
+		// Set the user ID and room ID from the client
+		chatMessage.UserID = c.UserID
+
+		// Save the message to database if it's a text message
+		if chatMessage.Type == "send_message" {
+			chat := types.Chat{
+				UserID:   c.UserID,
+				RoomID:   c.RoomId,
+				Chat:     chatMessage.Payload.Chat,
+				ChatType: "TEXT",
+			}
+
+			if err := h.ChatRepo.SaveChat(chat); err != nil {
+				log.Printf("Error saving chat to database: %v", err)
+			}
+		}
+
+		// Broadcast the message to all clients in the room
 		c.Hub.Broadcast <- msg
 	}
 }

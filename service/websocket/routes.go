@@ -3,6 +3,7 @@ package websocket
 import (
 	"ChiragKr04/go-backend/service/rooms"
 	"ChiragKr04/go-backend/service/user"
+	"ChiragKr04/go-backend/types"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -12,15 +13,18 @@ type Handler struct {
 	HubManager *HubManager
 	UserRepo   *user.UserRepository
 	RoomRepo   *rooms.RoomsRepository
+	ChatRepo   types.ChatRepository
 }
 
 func NewHandler(
 	repo *user.UserRepository,
-	roomRepo *rooms.RoomsRepository) *Handler {
+	roomRepo *rooms.RoomsRepository,
+	chatRepo types.ChatRepository) *Handler {
 	return &Handler{
 		HubManager: NewHubManager(),
 		UserRepo:   repo,
 		RoomRepo:   roomRepo,
+		ChatRepo:   chatRepo,
 	}
 }
 
