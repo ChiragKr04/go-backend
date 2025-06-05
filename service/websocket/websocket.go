@@ -111,6 +111,7 @@ func (h *Handler) ReadPump(c *LocalClient) {
 
 		// Set the user ID and room ID from the client
 		chatMessage.UserID = c.UserID
+		chatMessage.Username = c.UserName
 
 		// Save the message to database if it's a text message
 		if chatMessage.Type == types.SendMessageEvent.String() {
@@ -134,6 +135,8 @@ func (h *Handler) ReadPump(c *LocalClient) {
 			}
 			c.Hub.Broadcast <- marshaledData
 			continue
+		} else if chatMessage.Type == types.JoinRoomEvent.String() {
+			log.Printf("User joined: %s", chatMessage.Username)
 		}
 
 		// Broadcast the message to all clients in the room

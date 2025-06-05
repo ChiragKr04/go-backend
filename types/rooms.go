@@ -31,15 +31,44 @@ type RoomCreateRequest struct {
 type SocketEventType int
 
 const (
-	UserCountEvent      SocketEventType = iota
-	UserJoinedEvent     SocketEventType = iota
-	UserLeftEvent       SocketEventType = iota
-	SendMessageEvent    SocketEventType = iota
-	ReceiveMessageEvent SocketEventType = iota
+	UserCountEvent       SocketEventType = iota
+	UserJoinedEvent      SocketEventType = iota
+	UserLeftEvent        SocketEventType = iota
+	SendMessageEvent     SocketEventType = iota
+	ReceiveMessageEvent  SocketEventType = iota
+	JoinRoomEvent        SocketEventType = iota
+	LeaveRoomEvent       SocketEventType = iota
+	AuthenticateEvent    SocketEventType = iota
+	ConnectEvent         SocketEventType = iota
+	ConnectErrorEvent    SocketEventType = iota
+	DisconnectEvent      SocketEventType = iota
+	ReconnectFailedEvent SocketEventType = iota
+	MessageEvent         SocketEventType = iota
+	MessageReceivedEvent SocketEventType = iota
+	MessageHistoryEvent  SocketEventType = iota
+	SystemMessageEvent   SocketEventType = iota
+	NewMessageEvent      SocketEventType = iota
 )
 
 // String method to get string representation of the enum
 func (s SocketEventType) String() string {
+	// UserCount = "USER_COUNT",
+	// UserJoined = "USER_JOINED",
+	// UserLeft = "USER_LEFT",
+	// SendMessage = "SEND_MESSAGE",
+	// ReceiveMessage = "RECEIVE_MESSAGE",
+	// JoinRoom = "JOIN_ROOM",
+	// LeaveRoom = "LEAVE_ROOM",
+	// Authenticate = "AUTHENTICATE",
+	// Connect = "CONNECT",
+	// ConnectError = "CONNECT_ERROR",
+	// Disconnect = "DISCONNECT",
+	// ReconnectFailed = "RECONNECT_FAILED",
+	// Message = "MESSAGE",
+	// MessageReceived = "MESSAGE_RECEIVED",
+	// MessageHistory = "MESSAGE_HISTORY",
+	// SystemMessage = "SYSTEM_MESSAGE",
+	// NewMessage = "NEW_MESSAGE",
 	switch s {
 	case UserCountEvent:
 		return "USER_COUNT"
@@ -51,6 +80,30 @@ func (s SocketEventType) String() string {
 		return "SEND_MESSAGE"
 	case ReceiveMessageEvent:
 		return "RECEIVE_MESSAGE"
+	case JoinRoomEvent:
+		return "JOIN_ROOM"
+	case LeaveRoomEvent:
+		return "LEAVE_ROOM"
+	case AuthenticateEvent:
+		return "AUTHENTICATE"
+	case ConnectEvent:
+		return "CONNECT"
+	case ConnectErrorEvent:
+		return "CONNECT_ERROR"
+	case DisconnectEvent:
+		return "DISCONNECT"
+	case ReconnectFailedEvent:
+		return "RECONNECT_FAILED"
+	case MessageEvent:
+		return "MESSAGE"
+	case MessageReceivedEvent:
+		return "MESSAGE_RECEIVED"
+	case MessageHistoryEvent:
+		return "MESSAGE_HISTORY"
+	case SystemMessageEvent:
+		return "SYSTEM_MESSAGE"
+	case NewMessageEvent:
+		return "NEW_MESSAGE"
 	default:
 		return "UNKNOWN"
 	}
