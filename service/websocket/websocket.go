@@ -17,7 +17,8 @@ import (
 
 type LocalClient struct {
 	*types.Client
-	UserID int
+	UserID   int
+	UserName string
 }
 
 type WebhookHandler struct {
@@ -71,7 +72,8 @@ func (h *Handler) serveWs(w http.ResponseWriter, r *http.Request) {
 			Request: r,
 			RoomId:  room.RoomId,
 		},
-		UserID: userID,
+		UserID:   userID,
+		UserName: user.Username,
 	}
 	client.Conn = conn
 
@@ -111,17 +113,27 @@ func (h *Handler) ReadPump(c *LocalClient) {
 		chatMessage.UserID = c.UserID
 
 		// Save the message to database if it's a text message
-		if chatMessage.Type == "send_message" {
+		if chatMessage.Type == types.SendMessageEvent.String() {
+			log.Printf("Received message: %v", chatMessage)
 			chat := types.Chat{
 				UserID:   c.UserID,
 				RoomID:   c.RoomId,
-				Chat:     chatMessage.Payload.Chat,
+				Chat:     chatMessage.Chat_Data.Chat,
 				ChatType: "TEXT",
 			}
 
-			if err := h.ChatRepo.SaveChat(chat); err != nil {
+			msgData, err := h.ChatRepo.SaveChat(chat)
+			if err != nil {
 				log.Printf("Error saving chat to database: %v", err)
 			}
+			msgData.Username = c.UserName
+
+			marshaledData, err := json.Marshal(msgData)
+			if err != nil {
+				log.Printf("Error marshalling message: %v", err)
+			}
+			c.Hub.Broadcast <- marshaledData
+			continue
 		}
 
 		// Broadcast the message to all clients in the room

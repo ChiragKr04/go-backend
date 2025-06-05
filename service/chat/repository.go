@@ -16,8 +16,8 @@ func NewRepository(db *sql.DB) *ChatRepository {
 	}
 }
 
-func (r *ChatRepository) SaveChat(chat types.Chat) error {
-	_, err := r.db.Exec(
+func (r *ChatRepository) SaveChat(chat types.Chat) (types.Chat, error) {
+	res, err := r.db.Exec(
 		"INSERT INTO chats (userId, roomId, chat, chatType, createdAt) VALUES (?, ?, ?, ?, ?)",
 		chat.UserID,
 		chat.RoomID,
@@ -25,7 +25,18 @@ func (r *ChatRepository) SaveChat(chat types.Chat) error {
 		chat.ChatType,
 		time.Now(),
 	)
-	return err
+	if err != nil {
+		return chat, err
+	}
+
+	id, err := res.LastInsertId()
+	if err != nil {
+		return chat, err
+	}
+
+	chat.ID = int(id)
+
+	return chat, err
 }
 
 func (r *ChatRepository) GetChatsByRoomId(roomId string, limit int, offset int) ([]types.Chat, error) {

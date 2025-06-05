@@ -1,9 +1,11 @@
 package types
 
-import "time"
+import (
+	"time"
+)
 
 type ChatRepository interface {
-	SaveChat(chat Chat) error
+	SaveChat(chat Chat) (Chat, error)
 	GetChatsByRoomId(roomId string, limit int, offset int) ([]Chat, error)
 }
 
@@ -26,7 +28,7 @@ type ChatPayload struct {
 
 type ChatMessage struct {
 	Type      string      `json:"type"`
-	Payload   ChatPayload `json:"payload"`
+	Chat_Data ChatPayload `json:"chat_data"`
 	Timestamp string      `json:"timestamp"`
 	UserID    int         `json:"userId"`
 	Username  string      `json:"username"`

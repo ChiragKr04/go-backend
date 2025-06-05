@@ -26,3 +26,32 @@ type RoomCreateRequest struct {
 	IsPrivate       bool   `json:"is_private"`
 	Invitations     []int  `json:"invitations" validate:"omitempty,min=1"`
 }
+
+// SocketEventType represents different types of socket events
+type SocketEventType int
+
+const (
+	UserCountEvent      SocketEventType = iota
+	UserJoinedEvent     SocketEventType = iota
+	UserLeftEvent       SocketEventType = iota
+	SendMessageEvent    SocketEventType = iota
+	ReceiveMessageEvent SocketEventType = iota
+)
+
+// String method to get string representation of the enum
+func (s SocketEventType) String() string {
+	switch s {
+	case UserCountEvent:
+		return "USER_COUNT"
+	case UserJoinedEvent:
+		return "USER_JOINED"
+	case UserLeftEvent:
+		return "USER_LEFT"
+	case SendMessageEvent:
+		return "SEND_MESSAGE"
+	case ReceiveMessageEvent:
+		return "RECEIVE_MESSAGE"
+	default:
+		return "UNKNOWN"
+	}
+}
