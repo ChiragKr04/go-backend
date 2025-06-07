@@ -1,3 +1,3 @@
 ALTER TABLE `chats` 
-DROP COLUMN `roomId`,
-DROP COLUMN `createdAt`; 
+DROP COLUMN IF EXISTS `roomId`,
+DROP COLUMN IF EXISTS `createdAt`; 

@@ -7,6 +7,8 @@ import (
 type ChatRepository interface {
 	SaveChat(chat Chat) (Chat, error)
 	GetChatsByRoomId(roomId string, limit int, offset int) ([]Chat, error)
+	RoomJoined(userId int, roomId string) error
+	RoomLeft(userId int, roomId string) error
 }
 
 type Chat struct {

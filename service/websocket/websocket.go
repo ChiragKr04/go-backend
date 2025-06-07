@@ -136,7 +136,11 @@ func (h *Handler) ReadPump(c *LocalClient) {
 			c.Hub.Broadcast <- marshaledData
 			continue
 		} else if chatMessage.Type == types.JoinRoomEvent.String() {
+			h.ChatRepo.RoomJoined(c.UserID, c.RoomId)
 			log.Printf("User joined: %s", chatMessage.Username)
+		} else if chatMessage.Type == types.LeaveRoomEvent.String() {
+			h.ChatRepo.RoomLeft(c.UserID, c.RoomId)
+			log.Printf("User left: %s", chatMessage.Username)
 		}
 
 		// Broadcast the message to all clients in the room
