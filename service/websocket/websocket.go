@@ -103,23 +103,30 @@ func (h *Handler) ReadPump(c *LocalClient) {
 		}
 
 		// Parse the incoming message
-		var chatMessage types.ChatMessage
-		if err := json.Unmarshal(msg, &chatMessage); err != nil {
+		var websocketMessage types.WebSocketMessage
+		if err := json.Unmarshal(msg, &websocketMessage); err != nil {
 			log.Printf("Error parsing message: %v", err)
 			continue
 		}
 
 		// Set the user ID and room ID from the client
-		chatMessage.UserID = c.UserID
-		chatMessage.Username = c.UserName
+		websocketMessage.UserID = c.UserID
+		websocketMessage.Username = c.UserName
 
 		// Save the message to database if it's a text message
-		if chatMessage.Type == types.SendMessageEvent.String() {
+		if websocketMessage.Type == types.SendMessageEvent.String() {
+
+			var chatMessage types.ChatMessage
+			if err := json.Unmarshal(msg, &chatMessage); err != nil {
+				log.Printf("Error parsing message: %v", err)
+				continue
+			}
+
 			log.Printf("Received message: %v", chatMessage)
 			chat := types.Chat{
 				UserID:   c.UserID,
 				RoomID:   c.RoomId,
-				Chat:     chatMessage.Chat_Data.Chat,
+				Chat:     chatMessage.Data.Chat,
 				ChatType: "TEXT",
 			}
 
@@ -135,12 +142,56 @@ func (h *Handler) ReadPump(c *LocalClient) {
 			}
 			c.Hub.Broadcast <- marshaledData
 			continue
-		} else if chatMessage.Type == types.JoinRoomEvent.String() {
-			h.ChatRepo.RoomJoined(c.UserID, c.RoomId)
-			log.Printf("User joined: %s", chatMessage.Username)
-		} else if chatMessage.Type == types.LeaveRoomEvent.String() {
-			h.ChatRepo.RoomLeft(c.UserID, c.RoomId)
-			log.Printf("User left: %s", chatMessage.Username)
+		} else if websocketMessage.Type == types.JoinRoomEvent.String() {
+			userData, err := h.ChatRepo.RoomJoined(c.UserID, c.RoomId)
+			if err != nil {
+				log.Printf("Error joining room: %v", err)
+				continue
+			}
+			// log.Printf("User joined: %s", websocketMessage.Data.Username)
+			log.Printf("Room users count: %d", len(userData))
+
+			if len(userData) == 0 {
+				log.Printf("No users in room")
+				continue
+			}
+
+			msg, err := json.Marshal(types.WebSocketMessage{
+				Type: types.UserCountEvent.String(),
+				Data: types.RoomUserCountMessage{
+					RoomUsersCount: len(userData),
+					RoomUsersData:  userData,
+				},
+			})
+			if err != nil {
+				log.Printf("Error marshalling message: %v", err)
+				continue
+			}
+
+			c.Hub.Broadcast <- msg
+			continue
+		} else if websocketMessage.Type == types.LeaveRoomEvent.String() {
+			userData, err := h.ChatRepo.RoomLeft(c.UserID, c.RoomId)
+			if err != nil {
+				log.Printf("Error leaving room: %v", err)
+				continue
+			}
+			// log.Printf("User left: %s", websocketMessage.Data.Username)
+			log.Printf("Room users count: %d", len(userData))
+
+			msg, err := json.Marshal(types.WebSocketMessage{
+				Type: types.UserCountEvent.String(),
+				Data: types.RoomUserCountMessage{
+					RoomUsersCount: len(userData),
+					RoomUsersData:  userData,
+				},
+			})
+			if err != nil {
+				log.Printf("Error marshalling message: %v", err)
+				continue
+			}
+			c.Hub.Broadcast <- msg
+			continue
 		}
 
 		// Broadcast the message to all clients in the room

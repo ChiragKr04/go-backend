@@ -8,6 +8,14 @@ type RoomRepository interface {
 	GetRoomByRoomId(roomId string) (*Room, error)
 }
 
+type WebSocketMessage struct {
+	Type      string `json:"type"`
+	UserID    int    `json:"userId"`
+	Username  string `json:"username"`
+	Data      any    `json:"data"`
+	Timestamp string `json:"timestamp"`
+}
+
 type Room struct {
 	ID              int       `json:"id"`
 	RoomId          string    `json:"room_id"`

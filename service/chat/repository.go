@@ -16,10 +16,31 @@ func NewRepository(db *sql.DB) *ChatRepository {
 	}
 }
 
-func (r *ChatRepository) RoomJoined(userId int, roomId string) error {
+func (r *ChatRepository) GetRoomUsersCount(roomId string) ([]types.RoomUserData, error) {
+
+	rows, err := r.db.Query("SELECT ru.user_id, u.username FROM room_users ru LEFT JOIN users u ON ru.user_id = u.id WHERE ru.room_id = ?", roomId)
+	if err != nil {
+		return []types.RoomUserData{}, err
+	}
+	defer rows.Close()
+
+	var users []types.RoomUserData
+	for rows.Next() {
+		var user types.RoomUserData
+		err := rows.Scan(&user.UserID, &user.Username)
+		if err != nil {
+			return []types.RoomUserData{}, err
+		}
+		users = append(users, user)
+	}
+
+	return users, nil
+}
+
+func (r *ChatRepository) RoomJoined(userId int, roomId string) ([]types.RoomUserData, error) {
 	tx, err := r.db.Begin()
 	if err != nil {
-		return err
+		return []types.RoomUserData{}, err
 	}
 	defer tx.Rollback()
 
@@ -27,41 +48,59 @@ func (r *ChatRepository) RoomJoined(userId int, roomId string) error {
 	var count int
 	err = tx.QueryRow("SELECT COUNT(*) FROM room_users WHERE user_id = ? AND room_id = ?", userId, roomId).Scan(&count)
 	if err != nil {
-		return err
+		return []types.RoomUserData{}, err
 	}
 	if count > 0 {
-		return nil
+		// get room users count
+		userCount, err := r.GetRoomUsersCount(roomId)
+		if err != nil {
+			return []types.RoomUserData{}, err
+		}
+		return userCount, nil
 	}
 
 	_, err = tx.Exec("INSERT INTO room_users (user_id, room_id) VALUES (?, ?)", userId, roomId)
 	if err != nil {
-		return err
+		return []types.RoomUserData{}, err
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		return err
+		return []types.RoomUserData{}, err
 	}
-	return nil
+
+	// get room users count
+	userCount, err := r.GetRoomUsersCount(roomId)
+	if err != nil {
+		return []types.RoomUserData{}, err
+	}
+
+	return userCount, nil
 }
 
-func (r *ChatRepository) RoomLeft(userId int, roomId string) error {
+func (r *ChatRepository) RoomLeft(userId int, roomId string) ([]types.RoomUserData, error) {
 	tx, err := r.db.Begin()
 	if err != nil {
-		return err
+		return []types.RoomUserData{}, err
 	}
 	defer tx.Rollback()
 
 	_, err = tx.Exec("DELETE FROM room_users WHERE user_id = ? AND room_id = ?", userId, roomId)
 	if err != nil {
-		return err
+		return []types.RoomUserData{}, err
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		return err
+		return []types.RoomUserData{}, err
 	}
-	return nil
+
+	userCount, err := r.GetRoomUsersCount(roomId)
+	if err != nil {
+		return []types.RoomUserData{}, err
+	}
+
+	return userCount, nil
 }
 
 func (r *ChatRepository) SaveChat(chat types.Chat) (types.Chat, error) {
