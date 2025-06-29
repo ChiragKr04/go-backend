@@ -39,23 +39,29 @@ type RoomCreateRequest struct {
 type SocketEventType int
 
 const (
-	UserCountEvent       SocketEventType = iota
-	UserJoinedEvent      SocketEventType = iota
-	UserLeftEvent        SocketEventType = iota
-	SendMessageEvent     SocketEventType = iota
-	ReceiveMessageEvent  SocketEventType = iota
-	JoinRoomEvent        SocketEventType = iota
-	LeaveRoomEvent       SocketEventType = iota
-	AuthenticateEvent    SocketEventType = iota
-	ConnectEvent         SocketEventType = iota
-	ConnectErrorEvent    SocketEventType = iota
-	DisconnectEvent      SocketEventType = iota
-	ReconnectFailedEvent SocketEventType = iota
-	MessageEvent         SocketEventType = iota
-	MessageReceivedEvent SocketEventType = iota
-	MessageHistoryEvent  SocketEventType = iota
-	SystemMessageEvent   SocketEventType = iota
-	NewMessageEvent      SocketEventType = iota
+	UserCountEvent                    SocketEventType = iota
+	UserJoinedEvent                   SocketEventType = iota
+	UserLeftEvent                     SocketEventType = iota
+	SendMessageEvent                  SocketEventType = iota
+	ReceiveMessageEvent               SocketEventType = iota
+	JoinRoomEvent                     SocketEventType = iota
+	LeaveRoomEvent                    SocketEventType = iota
+	AuthenticateEvent                 SocketEventType = iota
+	ConnectEvent                      SocketEventType = iota
+	ConnectErrorEvent                 SocketEventType = iota
+	DisconnectEvent                   SocketEventType = iota
+	ReconnectFailedEvent              SocketEventType = iota
+	MessageEvent                      SocketEventType = iota
+	MessageReceivedEvent              SocketEventType = iota
+	MessageHistoryEvent               SocketEventType = iota
+	SystemMessageEvent                SocketEventType = iota
+	NewMessageEvent                   SocketEventType = iota
+	SendIceCandidateToSignalingServer SocketEventType = iota
+	NewOffer                          SocketEventType = iota
+	NewOfferAwaiting                  SocketEventType = iota
+	NewAnswer                         SocketEventType = iota
+	AnswerResponse                    SocketEventType = iota
+	ReceivedIceCandidateFromServer    SocketEventType = iota
 )
 
 // String method to get string representation of the enum
@@ -112,7 +118,61 @@ func (s SocketEventType) String() string {
 		return "SYSTEM_MESSAGE"
 	case NewMessageEvent:
 		return "NEW_MESSAGE"
+	case SendIceCandidateToSignalingServer:
+		return "SEND_ICE_CANDIDATE_TO_SIGNALING_SERVER"
+	case NewOffer:
+		return "NEW_OFFER"
+	case NewOfferAwaiting:
+		return "NEW_OFFER_AWAITING"
+	case NewAnswer:
+		return "NEW_ANSWER"
+	case AnswerResponse:
+		return "ANSWER_RESPONSE"
+	case ReceivedIceCandidateFromServer:
+		return "RECEIVED_ICE_CANDIDATE_FROM_SERVER"
 	default:
 		return "UNKNOWN"
 	}
+}
+
+// type Offer struct {
+// 	// offererUserName: userName,
+// 	//           offer: newOffer,
+// 	//           offerIceCandidates: [],
+// 	//           answererUserName: null,
+// 	//           answer: null,
+// 	//           answererIceCandidates: []
+// 	OffererUserName       string    `json:"offerer_user_name"`
+// 	Offer                 OfferData `json:"offer"`
+// 	OfferIceCandidates    []string  `json:"offer_ice_candidates"`
+// 	AnswererUserName      *string   `json:"answerer_user_name"`
+// 	Answer                *string   `json:"answer"`
+// 	AnswererIceCandidates []string  `json:"answerer_ice_candidates"`
+// }
+
+type WebRTCOfferMessage struct {
+	Type     string `json:"type"`
+	UserID   int    `json:"userId"`
+	Username string `json:"username"`
+	Data     struct {
+		Offer struct {
+			SDP  string `json:"sdp"`
+			Type string `json:"type,omitempty"`
+		} `json:"offer"`
+	} `json:"data"`
+}
+
+type Offer struct {
+	Offer               string `json:"offer"`
+	Answer              string `json:"answer"`
+	OffererUserID       int    `json:"offerer_user_id"`
+	AnswererUserID      int    `json:"answerer_user_id"`
+	RoomID              string `json:"room_id"`
+	OfferIceCandidates  string `json:"offer_ice_candidates"`
+	AnswerIceCandidates string `json:"answer_ice_candidates"`
+}
+
+type OfferData struct {
+	Type string `json:"type"`
+	Sdp  any    `json:"sdp"`
 }

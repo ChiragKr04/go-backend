@@ -14,17 +14,20 @@ type Handler struct {
 	UserRepo   *user.UserRepository
 	RoomRepo   *rooms.RoomsRepository
 	ChatRepo   types.ChatRepository
+	WebrtcRepo types.WebrtcRepository
 }
 
 func NewHandler(
 	repo *user.UserRepository,
 	roomRepo *rooms.RoomsRepository,
-	chatRepo types.ChatRepository) *Handler {
+	chatRepo types.ChatRepository,
+	webrtcRepo types.WebrtcRepository) *Handler {
 	return &Handler{
 		HubManager: NewHubManager(),
 		UserRepo:   repo,
 		RoomRepo:   roomRepo,
 		ChatRepo:   chatRepo,
+		WebrtcRepo: webrtcRepo,
 	}
 }
 

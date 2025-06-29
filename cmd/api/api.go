@@ -4,6 +4,7 @@ import (
 	"ChiragKr04/go-backend/service/chat"
 	"ChiragKr04/go-backend/service/rooms"
 	"ChiragKr04/go-backend/service/user"
+	"ChiragKr04/go-backend/service/webrtc"
 	"ChiragKr04/go-backend/service/websocket"
 	"database/sql"
 	"log"
@@ -60,11 +61,11 @@ func (s *APIServerModel) Run() error {
 	userRepo := user.NewRepository(s.db)
 	roomsRepo := rooms.NewRepository(s.db)
 	chatRepo := chat.NewRepository(s.db)
-
+	webrtcRepo := webrtc.NewRepository(s.db)
 	/// Handlers
 
 	userHandler := user.NewHandler(userRepo)
-	websocketHandler := websocket.NewHandler(userRepo, roomsRepo, chatRepo)
+	websocketHandler := websocket.NewHandler(userRepo, roomsRepo, chatRepo, webrtcRepo)
 	roomsHandler := rooms.NewHandler(roomsRepo, userRepo)
 	chatHandler := chat.NewHandler(chatRepo)
 

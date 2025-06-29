@@ -3,6 +3,7 @@ package websocket
 import (
 	"ChiragKr04/go-backend/service/rooms"
 	"ChiragKr04/go-backend/service/user"
+	"ChiragKr04/go-backend/service/webrtc"
 	"ChiragKr04/go-backend/types"
 	"ChiragKr04/go-backend/utils"
 
@@ -22,12 +23,14 @@ type LocalClient struct {
 }
 
 type WebhookHandler struct {
-	userRepo user.UserRepository
+	userRepo   user.UserRepository
+	webrtcRepo webrtc.WebrtcRepository
 }
 
-func NewWebhookHandler(userRepo user.UserRepository) *WebhookHandler {
+func NewWebhookHandler(userRepo user.UserRepository, webrtcRepo webrtc.WebrtcRepository) *WebhookHandler {
 	return &WebhookHandler{
-		userRepo: userRepo,
+		userRepo:   userRepo,
+		webrtcRepo: webrtcRepo,
 	}
 }
 
@@ -185,6 +188,43 @@ func (h *Handler) ReadPump(c *LocalClient) {
 					RoomUsersCount: len(userData),
 					RoomUsersData:  userData,
 				},
+			})
+			if err != nil {
+				log.Printf("Error marshalling message: %v", err)
+				continue
+			}
+			c.Hub.Broadcast <- msg
+			continue
+		} else if websocketMessage.Type == types.NewOffer.String() {
+			var offer types.WebRTCOfferMessage
+			if err := json.Unmarshal(msg, &offer); err != nil {
+				log.Printf("Error parsing message: %v", err)
+				continue
+			}
+			// convert offer.Data.Offer.SDP to json string
+			fullOfferJSON, err := json.Marshal(offer.Data.Offer)
+			if err != nil {
+				log.Printf("Error marshalling offer: %v", err)
+				continue
+			}
+			offerData, err := h.WebrtcRepo.CreateOffer(types.Offer{
+				Offer:               string(fullOfferJSON),
+				Answer:              "",
+				OffererUserID:       offer.UserID,
+				AnswererUserID:      0,
+				RoomID:              c.RoomId,
+				OfferIceCandidates:  "",
+				AnswerIceCandidates: "",
+			})
+			if err != nil {
+				log.Printf("Error creating offer: %v", err)
+				continue
+			}
+			msg, err := json.Marshal(types.WebSocketMessage{
+				Type:     types.NewOfferAwaiting.String(),
+				Data:     offerData,
+				UserID:   offer.UserID,
+				Username: offer.Username,
 			})
 			if err != nil {
 				log.Printf("Error marshalling message: %v", err)
